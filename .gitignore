@@ -1,0 +1,29 @@
+# 👉 Ignora pasta do ambiente virtual
+venv/
+env/
+
+# 👉 Ignora caches do Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 👉 Ignora arquivos de log
+*.log
+
+# 👉 Ignora arquivos de configuração pessoais do VSCode
+.vscode/
+
+# 👉 Ignora arquivos de variáveis de ambiente
+.env
+
+# 👉 Ignora arquivos de banco de dados temporários (se usar SQLite, por exemplo)
+*.sqlite3
+
+# 👉 Ignora pastas de build (se for distribuir pacotes)
+build/
+dist/
+*.egg-info/
+
+# 👉 Ignora arquivos do sistema operacional
+.DS_Store
+Thumbs.db
