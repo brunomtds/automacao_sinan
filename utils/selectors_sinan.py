@@ -22,6 +22,15 @@ CNES_INPUT = (By.ID, 'form:notificacao_unidadeSaude_coCnes')
 CNES_NOME_LABEL = (By.ID, 'form:notificacao_unidadeSaude_estabelecimentocomboboxField')
 DATA_SINTOMAS_INPUT = (By.ID, 'form:dtPrimeirosSintomasInputDate')
 
+# --- BOTÕES NOTIFICAÇÃO ---
+
+BTN_OK_NOTIF = (By.ID, 'form:botaoOk')
+BTN_VOLTAR_NOTIF = (By.ID, 'form:j_id313')
+BTN_CONF_NOTIF = (By.ID, 'form:btnCarregarInvestigacao')
+POPUP_DUPLICIDADE = (By.XPATH, "/html/body/div[5]/div[2]/div/div[2]/table/tbody/tr/td/center/b")
+BTN_CONF_DUPLICIDADE = (By.XPATH, '/html/body/div[5]/div[2]/div/div[2]/table/tbody/tr/td/center/input[1]')
+
+
 # --- FORMULÁRIO: PACIENTE ---
 NOME_PACIENTE_INPUT = (By.ID, 'form:notificacao_nomePaciente')
 DATA_NASC_INPUT = (By.ID, 'form:dtNascimentoInputDate')
@@ -43,8 +52,8 @@ CRITERIO_CONFIRMACAO_SELECT = (By.ID, 'form:dengue_criterio')
 EVOLUCAO_SELECT = (By.ID, 'form:dengue_evolucao')
 DATA_ENCERRAMENTO_INPUT = (By.ID, 'form:dengue_dataEncerramentoInputDate')
 
-# --- BOTÕES DE AÇÃO ---
-SALVAR_BUTTON = (By.ID, 'form:btnSalvarInvestigacao')
+# --- BOTÕES DE AÇÃO INVESTIGAÇÃO ---
+BTN_SALVAR_INVEST = (By.ID, 'form:btnSalvarInvestigacao')
 VOLTAR_BUTTON = (By.NAME, 'form:j_id848')
 CONFIRMAR_POPUP_BUTTON = (By.ID, 'form:btnNovaNotificacao')
 
