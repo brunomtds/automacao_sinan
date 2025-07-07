@@ -42,10 +42,11 @@ def preencher_sinais_clinicos(wait: WebDriverWait, linha: dict):
         selectors_sinan.ARTRITE_SELECT: data_handler.converter_sim_nao(linha.get('Artrite')),
         selectors_sinan.ARTRALGIA_SELECT: data_handler.converter_sim_nao(linha.get('Artralgia intensa')),
         selectors_sinan.PETEQUIAS_SELECT: data_handler.converter_sim_nao(linha.get('Petéquias')),
-        selectors_sinan.RETROORBITAL_SELECT: data_handler.converter_sim_nao(linha.get('Dor retroorbital')),
-        selectors_sinan.LACO_POSITIVA_SELECT: data_handler.converter_sim_nao(linha.get('Prova do laço positiva')),
         selectors_sinan.LEUCOPENIA_SELECT: data_handler.converter_sim_nao(linha.get('Leucopenia')),
+        selectors_sinan.LACO_POSITIVA_SELECT: data_handler.converter_sim_nao(linha.get('Prova do laço positiva')),
+        selectors_sinan.RETROORBITAL_SELECT: data_handler.converter_sim_nao(linha.get('Dor retroorbital')),
     }
+
 
     for seletor, valor in sintomas_map.items():
         tentativas = 0
@@ -57,6 +58,7 @@ def preencher_sinais_clinicos(wait: WebDriverWait, linha: dict):
                 selecionar_opcao(wait, seletor, valor)
                 sucesso = True
             except Exception as e:
+                logging.error(f"Erro ao selecionar {seletor} com valor {valor}: {e}")
                 tentativas += 1
         
         if not sucesso:
@@ -93,6 +95,7 @@ def preencher_doencas_pre_existentes(wait: WebDriverWait, linha: dict):
             selectors_sinan.HEPATOPATIAS_SELECT, selectors_sinan.HIPERTENSAO_SELECT, selectors_sinan.ACIDA_PEPTICA_SELECT,
             selectors_sinan.AUTO_IMUNES_SELECT
         ]
+
         for seletor in doencas_map_nao:
             try:
                 selecionar_opcao(wait, seletor, "2 - Não")

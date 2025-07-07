@@ -52,6 +52,13 @@ CRITERIO_CONFIRMACAO_SELECT = (By.ID, 'form:dengue_criterio')
 EVOLUCAO_SELECT = (By.ID, 'form:dengue_evolucao')
 DATA_ENCERRAMENTO_INPUT = (By.ID, 'form:dengue_dataEncerramentoInputDate')
 
+# --- FORMULÁRIO: EXAMES ---
+DATA_COLETA_NS1 = (By.ID, 'form:dengue_dataColetaNS1InputDate')
+RESULTADO_NS1 = (By.ID, 'form:dengue_resultadoNS1')
+DATA_COLETA_SOROLOGIA = (By.ID, 'form:dengue_dataColetaExameSorologicoInputDate')
+RESULTADO_SOROLOGIA = (By.ID, 'form:dengue_resultadoExameSorologico')
+CAMPO_OBSERVACOES = (By.ID, 'form:dengue_observacoes') #RESULTADO DE TESTE RÁPIDO VAI AQUI
+
 # --- BOTÕES DE AÇÃO INVESTIGAÇÃO ---
 BTN_SALVAR_INVEST = (By.ID, 'form:btnSalvarInvestigacao')
 VOLTAR_BUTTON = (By.NAME, 'form:j_id848')
@@ -72,7 +79,7 @@ ARTRITE_SELECT = (By.ID, 'form:chikungunya_sinaisArtrite')
 ARTRALGIA_SELECT = (By.ID, 'form:chikungunya_sinaisArtralgia')
 PETEQUIAS_SELECT = (By.ID, 'form:chikungunya_sinaisPetequias')
 RETROORBITAL_SELECT = (By.ID, 'form:chikungunya_sinaisRetroorbital')
-LACO_POSITIVA_SELECT = (By.ID, 'id="form:chikungunya_sinaisProvaLaco"')
+LACO_POSITIVA_SELECT = (By.ID, "form:chikungunya_sinaisProvaLaco")
 LEUCOPENIA_SELECT = (By.ID, 'form:chikungunya_sinaisLeucopenia')
 
 # --- FORMULÁRIO: DOENÇAS PRÉ-EXISTENTES (INVESTIGAÇÃO) ---
@@ -97,3 +104,6 @@ HEMATOCRITO_SELECT = (By.ID, 'form:dengue_sinais_alarme_hematocrito')
 HEPATOMEGALIA_SELECT = (By.ID, 'form:dengue_sinais_alarme_hepatomegalia')
 ACUMULO_LIQUIDOS_SELECT = (By.ID, 'form:dengue_sinais_alarme_liquidos')
 DATA_ALARME_INPUT = (By.ID, 'rich-calendar-input rich-calendar-input')
+
+
+DIV_ERROS = (By.ID, 'erros')

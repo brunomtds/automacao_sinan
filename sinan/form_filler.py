@@ -1,3 +1,4 @@
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
@@ -18,6 +19,7 @@ def preencher_campo(wait: WebDriverWait, seletor: tuple, valor: str, tab: bool =
     try:
         campo = wait.until(EC.element_to_be_clickable(seletor))
         campo.clear()
+        campo.send_keys(Keys.HOME)
         campo.send_keys(valor)
         if tab:
             campo.send_keys(Keys.TAB)
@@ -37,11 +39,17 @@ def preencher_data(wait: WebDriverWait, seletor: tuple, valor: str, tab: bool = 
         logging.error(f"Timeout: Não foi possível encontrar o campo de data {seletor}")
         raise
 
-def selecionar_opcao(wait: WebDriverWait, seletor: tuple, texto_visivel: str):
+def selecionar_opcao(wait: WebDriverWait, seletor: tuple, texto_visivel: str, send_tab: bool = False):
     """Seleciona uma opção de um menu dropdown (Select) pelo texto visível."""
     try:
+        element = wait.until(EC.element_to_be_clickable(seletor))
         select_element = Select(wait.until(EC.element_to_be_clickable(seletor)))
         select_element.select_by_visible_text(texto_visivel)
+
+        if send_tab:
+            actions = ActionChains(wait._driver)  # ou use seu driver diretamente se preferir
+            actions.send_keys(Keys.TAB).perform()
+        
     except NoSuchElementException:
         logging.error(f"Opção '{texto_visivel}' não encontrada no seletor {seletor}")
         raise
@@ -102,7 +110,7 @@ def preencher_dados_paciente(wait: WebDriverWait, linha: dict):
         nome_mae = 'Não Informado'
     preencher_campo(wait, selectors_sinan.NOME_MAE_INPUT, nome_mae)
 
-    selecionar_opcao(wait, selectors_sinan.UF_RESIDENCIA_SELECT, "SP")
+    selecionar_opcao(wait, selectors_sinan.UF_RESIDENCIA_SELECT, "SP", send_tab=True)
     time.sleep(2)
     wait.until(EC.element_to_be_clickable(selectors_sinan.MUNICIPIO_RESIDENCIA_INPUT)).send_keys('352590', Keys.TAB)
     time.sleep(1)
@@ -113,7 +121,7 @@ def preencher_dados_paciente(wait: WebDriverWait, linha: dict):
 
 def salvar_e_avancar(wait: WebDriverWait, linha: dict):
     """Clica para salvar a notificação e confirma a operação para avançar."""
-    logging.info("Salvando notificação inicial e avançando para investigação.")
+    logging.info("Salvando notificação e avançando para investigação.")
     wait.until(EC.element_to_be_clickable(selectors_sinan.BTN_OK_NOTIF)).click()
     num_sinan = str(linha.get('Sinan', ''))
 
@@ -131,19 +139,22 @@ def salvar_e_avancar(wait: WebDriverWait, linha: dict):
             raise Exception("Fluxo de salvamento da notificação interrompido.")
         
     try:
-        elemento_center = wait.until(EC.presence_of_element_located((selectors_sinan.POPUP_DUPLICIDADE)))
+        print(1)
+        elemento_center = WebDriverWait(wait._driver, 3).until(EC.presence_of_element_located((selectors_sinan.POPUP_DUPLICIDADE)))
+        print(2)
         texto_center = elemento_center.text
+        print(3)
 
         if "Notificação Cadastrada com Sucesso!" in texto_center:
             confirm_button = wait.until(EC.element_to_be_clickable(selectors_sinan.BTN_CONF_NOTIF))
             confirm_button.click()
             time.sleep(2)
+            wait._driver
         else:
             wait.until(EC.element_to_be_clickable((selectors_sinan.BTN_CONF_DUPLICIDADE))).click()
             time.sleep(2.5)
             wait.until(EC.element_to_be_clickable((selectors_sinan.BTN_CONF_NOTIF))).click()
     
-
         print(f"Notificação {num_sinan} enviada")
 
     except Exception as e:
@@ -160,23 +171,57 @@ def preencher_investigacao(wait: WebDriverWait, linha: dict):
 
     symptoms.preencher_doencas_pre_existentes(wait, linha)
 
-    resultado = linha.get('RESULTADO', '')
-    if resultado == 'Negativo':
-        selecionar_opcao(wait, selectors_sinan.CLASSIFICACAO_FINAL_SELECT, '5 - Descartado')
-    elif resultado == 'Positivo':
-        if data_handler.converter_sim_nao(linha.get('Sinais de Alerta')) == '1 - Sim':
-            selecionar_opcao(wait, selectors_sinan.CLASSIFICACAO_FINAL_SELECT, '11 - Dengue com sinais de alarme')
-        else:
-            selecionar_opcao(wait, selectors_sinan.CLASSIFICACAO_FINAL_SELECT, '10 - Dengue')
-    
     criterio = linha.get('Critério', '')
-    if criterio == 'Laboratório':
-        selecionar_opcao(wait, selectors_sinan.CRITERIO_CONFIRMACAO_SELECT, '1 - Laboratório')
-    elif criterio == 'Clínico-Epidemiológico':
+    tipo_exame = linha.get('Tipo de Exame', '')
+    dt_exame = data_handler.format_date(linha.get('Data da Coleta do Exame', dt_invest))
+    resultado = linha.get('RESULTADO', '')
+
+
+    if resultado == 'Negativo':
+        if tipo_exame == 'NS1':
+            preencher_campo(wait, selectors_sinan.DATA_COLETA_NS1, dt_exame, tab=True)
+            selecionar_opcao(wait, selectors_sinan.RESULTADO_NS1, '2 - Negativo', send_tab=True)
+        elif tipo_exame == 'IgM':
+            preencher_campo(wait, selectors_sinan.CAMPO_OBSERVACOES, f"Resultado Teste Rápido (IgM): {resultado} - {dt_exame}", tab=True)
+        elif tipo_exame == 'Sorologia':
+            preencher_campo(wait, selectors_sinan.DATA_COLETA_SOROLOGIA, dt_exame, tab=True)
+            selecionar_opcao(wait, selectors_sinan.RESULTADO_SOROLOGIA, '2 - Não Reagente', send_tab=True)
+        selecionar_opcao(wait, selectors_sinan.CLASSIFICACAO_FINAL_SELECT, '5 - Descartado', send_tab=True)
+
+
+    elif resultado == 'Positivo':
+        if tipo_exame == 'NS1':
+            preencher_campo(wait, selectors_sinan.DATA_COLETA_NS1, dt_exame, tab=True)
+            time.sleep(1)
+            preencher_campo(wait, selectors_sinan.DATA_COLETA_NS1, dt_exame, tab=True)
+            time.sleep(1)
+            selecionar_opcao(wait, selectors_sinan.RESULTADO_NS1, '1 - Positivo', send_tab=True)
+        elif tipo_exame == 'IgM':
+            preencher_campo(wait, selectors_sinan.CAMPO_OBSERVACOES, f"Resultado Teste Rápido (IgM): {resultado} - {dt_exame}", tab=True)
+        elif tipo_exame == 'Sorologia':
+            preencher_campo(wait, selectors_sinan.DATA_COLETA_SOROLOGIA, dt_exame, tab=True)
+            time.sleep(1)
+            preencher_campo(wait, selectors_sinan.DATA_COLETA_SOROLOGIA, dt_exame, tab=True)
+            time.sleep(1)
+            selecionar_opcao(wait, selectors_sinan.RESULTADO_SOROLOGIA, '1 - Reagente', send_tab=True)
+
+        if data_handler.converter_sim_nao(linha.get('Sinais de Alerta')) == '1 - Sim':
+            selecionar_opcao(wait, selectors_sinan.CLASSIFICACAO_FINAL_SELECT, '11 - Dengue com sinais de alarme', send_tab=True)
+        else:
+            selecionar_opcao(wait, selectors_sinan.CLASSIFICACAO_FINAL_SELECT, '10 - Dengue', send_tab=True)
+    time.sleep(2)
+
+    if criterio == 'Clínico-Epidemiológico' or tipo_exame in ['IgM', 'NS1']:
         selecionar_opcao(wait, selectors_sinan.CRITERIO_CONFIRMACAO_SELECT, '2 - Clínico-Epidemiológico')
+        time.sleep(2)
+    
+    elif tipo_exame == 'Sorologia':
+        selecionar_opcao(wait, selectors_sinan.CRITERIO_CONFIRMACAO_SELECT, '1 - Laboratório')
+        time.sleep(2)
 
     if resultado != 'Aguardando Resultado':
-        selecionar_opcao(wait, selectors_sinan.EVOLUCAO_SELECT, '1 - Cura')
+        selecionar_opcao(wait, selectors_sinan.EVOLUCAO_SELECT, '1 - Cura', send_tab= True)
+        time.sleep(1)
         
         dt_notif_obj = linha.get('Data da notificação')
         if dt_notif_obj and (datetime.now().date() - dt_notif_obj.date()).days > 60:
@@ -184,8 +229,9 @@ def preencher_investigacao(wait: WebDriverWait, linha: dict):
         else:
             dt_encerramento = datetime.now().strftime('%d/%m/%Y')
         
-        preencher_data(wait, selectors_sinan.DATA_ENCERRAMENTO_INPUT, dt_encerramento)
+        preencher_data(wait, selectors_sinan.DATA_ENCERRAMENTO_INPUT, dt_encerramento, tab=True)
 
+    print(dt_exame)
     symptoms.preencher_sinais_de_alarme(wait, linha)
 
 def salvar_investigacao(wait: WebDriverWait):
@@ -211,7 +257,7 @@ def preencher_notificacao_completa(navegador: WebDriver, linha: dict):
     preencher_dados_paciente(wait, linha)
     
     # Etapa 2: Salvar e ir para a segunda página (Investigação)
-    salvar_e_avancar(wait)
+    salvar_e_avancar(wait, linha)
     
     # Etapa 3: Preencher a segunda página
     preencher_investigacao(wait, linha)
